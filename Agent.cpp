@@ -83,15 +83,15 @@ void simpleAgent(Argument args){
 			}else{
 				if(result[0][0]=='B'){
 					if(result[0][1]=='D'){
-						int floor = (int)result[0][3]- (int)'0';
+						int floor = (int)result[0][3]- (int)'1';
 						state.BD[floor]=1;
 					}else if(result[0][1]=='U'){
-						int floor = (int)result[0][3]- (int)'0';
+						int floor = (int)result[0][3]- (int)'1';
 						state.BU[floor]=1;
 					}else if(result[0][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[0][2]- (int)'0';
-							int lift = (int)result[0][4]- (int)'0';
+							int button= (int)result[0][2]- (int)'1';
+							int lift = (int)result[0][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
@@ -101,15 +101,15 @@ void simpleAgent(Argument args){
 			if(result[0]=="0"){
 				if(result[1][0]=='B'){
 					if(result[1][1]=='D'){
-						int floor = (int)result[1][3]- (int)'0';
+						int floor = (int)result[1][3]- (int)'1';
 						state.BD[floor]=1;
 					}else if(result[1][1]=='U'){
-						int floor = (int)result[1][3]- (int)'0';
+						int floor = (int)result[1][3]- (int)'1';
 						state.BU[floor]=1;
 					}else if(result[1][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[1][2]- (int)'0';
-							int lift = (int)result[1][4]- (int)'0';
+							int button= (int)result[1][2]- (int)'1';
+							int lift = (int)result[1][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
@@ -117,15 +117,15 @@ void simpleAgent(Argument args){
 			}else{
 				if(result[0][0]=='B'){
 					if(result[0][1]=='D'){
-						int floor = (int)result[0][3]- (int)'0';
+						int floor = (int)result[0][3]- (int)'1';
 						state.BD[floor]=1;
 					}else if(result[0][1]=='U'){
-						int floor = (int)result[0][3]- (int)'0';
+						int floor = (int)result[0][3]- (int)'1';
 						state.BU[floor]=1;
 					}else if(result[0][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[0][2]- (int)'0';
-							int lift = (int)result[0][4]- (int)'0';
+							int button= (int)result[0][2]- (int)'1';
+							int lift = (int)result[0][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
@@ -135,30 +135,30 @@ void simpleAgent(Argument args){
 			if(result[0]=="0"){
 				if(result[1][0]=='B'){
 					if(result[1][1]=='D'){
-						int floor = (int)result[1][3]- (int)'0';
+						int floor = (int)result[1][3]- (int)'1';
 						state.BD[floor]=1;
 					}else if(result[1][1]=='U'){
-							int floor = (int)result[1][3]- (int)'0';
+							int floor = (int)result[1][3]- (int)'1';
 							state.BU[floor]=1;
 					}else if(result[1][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[1][2]- (int)'0';
-							int lift = (int)result[1][4]- (int)'0';
+							int button= (int)result[1][2]- (int)'1';
+							int lift = (int)result[1][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
 				}
 				if(result[2][0]=='B'){
 					if(result[2][1]=='D'){
-						int floor = (int)result[2][3]- (int)'0';
+						int floor = (int)result[2][3]- (int)'1';
 						state.BU[floor]=1;
 					}else if(result[2][1]=='U'){
-						int floor = (int)result[2][3]- (int)'0';
+						int floor = (int)result[2][3]- (int)'1';
 						state.BU[floor]=1;
 					}else if(result[2][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[2][2]- (int)'0';
-							int lift = (int)result[2][4]- (int)'0';
+							int button= (int)result[2][2]- (int)'1';
+							int lift = (int)result[2][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
@@ -166,30 +166,30 @@ void simpleAgent(Argument args){
 			}else{
 				if(result[0][0]=='B'){
 					if(result[0][1]=='D'){
-						int floor = (int)result[0][3]- (int)'0';
+						int floor = (int)result[0][3]- (int)'1';
 						state.BD[floor]=1;
 					}else if(result[0][1]=='U'){
-						int floor = (int)result[0][3]- (int)'0';
+						int floor = (int)result[0][3]- (int)'1';
 						state.BU[floor]=1;
 					}else if(result[0][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[0][2]- (int)'0';
-							int lift = (int)result[0][4]- (int)'0';
+							int button= (int)result[0][2]- (int)'1';
+							int lift = (int)result[0][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
 				}
 				if(result[1][0]=='B'){
 					if(result[1][1]=='D'){
-						int floor = (int)result[1][3]- (int)'0';
+						int floor = (int)result[1][3]- (int)'1';
 						state.BD[floor]=1;
 					}else if(result[1][1]=='U'){
-							int floor = (int)result[1][3]- (int)'0';
+							int floor = (int)result[1][3]- (int)'1';
 							state.BU[floor]=1;
 					}else if(result[1][1]=='_'){
 						if(args.K<10 && args.N<10){
-							int button= (int)result[1][2]- (int)'0';
-							int lift = (int)result[1][4]- (int)'0';
+							int button= (int)result[1][2]- (int)'1';
+							int lift = (int)result[1][4]- (int)'1';
 							state.BF[button][lift]=1;
 						}
 					}
