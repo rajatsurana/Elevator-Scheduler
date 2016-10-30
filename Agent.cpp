@@ -31,44 +31,25 @@ class State{
     	};
 };
 void simpleAgent(Argument args){
-		State state(args.N,args.K);
-    //ready = sys.stdin.readline().strip()
- 		char ready[100];
-    cin.getline(ready,100);
-    //int data[3];
-    //int i = 0;
-    cerr<<ready<<"ready"<<endl;
+	State state(args.N,args.K);
+	string ready;
+  getline(cin,ready);
 
-    //stringstream ssin(line);
-    //while (ssin.good() && i < 3){
-    //    ssin >> data[i];
-     //   cerr<<data[i]<<" data"<<endl;
-     //   ++i;
-    //}
+  cerr<<ready<<"ready"<<endl;
+
 	vector<string> repeat;
-	for(int i=0;i<args.N-1; i++){
-		repeat.push_back("AU");
-		repeat.push_back("AOU");
-	}
+	for(int i=0;i<args.N-1; i++){repeat.push_back("AU");repeat.push_back("AOU");}
 		repeat.push_back("AOD");
-	for(int i=0;i<args.N-1; i++){
-		repeat.push_back("AD");
-		repeat.push_back("AOD");
-	}
+	for(int i=0;i<args.N-1; i++){repeat.push_back("AD");repeat.push_back("AOD");}
 		repeat.push_back("AOU");
-
     int i = 0;
-
     while(1){
 		vector<string> actions;
 		string suff="";
-
-				stringstream sss;
-
+		stringstream sss;
 		for(int k=0;k<args.K;k++){
 			int kk=k+1;
-			sss<< kk;
-			sss>>suff;
+			sss<< kk;sss>>suff;
 			actions.push_back("AOU" + suff);
 			//cerr<<(char)(k+1)<<" k+1 "<<k+1<<endl;
 		}
@@ -79,8 +60,7 @@ void simpleAgent(Argument args){
 				string end="";
 				int ll=l+1;
 				stringstream ss;
-				ss<< ll;
-				ss>>end;
+				ss<< ll;ss>>end;
         actions[l] = repeat[(i - (args.N/args.K+1)*l*2 - 1) % repeat.size()] +end;//+ string(1,1);
                 //cerr<<(char)(l+1)<<" l+1 "<<l+1<<endl;
 			}
@@ -90,11 +70,15 @@ void simpleAgent(Argument args){
 			actionsOut+= " "+ actions[ll];
 		}
         i+=1;
-		cout<<actionsOut<<'\n'<<std::flush;
-		char updates[100];
-    	cin.getline(updates,100);
-			cerr<<updates<<"updates"<<endl;
-			//take action according to updates received
+		cout<<actionsOut<<'\n'<<flush;
+		string updates;
+  	getline(cin,updates);
+		cerr<<updates<<"update"<<endl;
+		istringstream iss(updates);
+		vector<string> result;
+		for(string s; iss >> s; )	result.push_back(s);
+		cerr<<result[0]<<"res"<<endl;
+		//take action according to updates received
 	}
 }
 
@@ -109,7 +93,7 @@ int main(int argc, char *argv[]){
 	sscanf(argv[5],"%f",&args.r);
 	sscanf(argv[6],"%f",&args.t);
 
-	cout<<"0\n"<<std::flush;
+	cout<<"0\n"<<flush;
 
 	simpleAgent(args);
 	return 0;
