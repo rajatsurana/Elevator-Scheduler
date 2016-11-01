@@ -10,10 +10,9 @@ class Argument{
 		float q;
 		float r;
 		float t;
-		Argument();
+		Argument(){};
 };
-Argument::Argument(){
-}
+
 class State{
     public:
     	int N;//number of floors
@@ -36,7 +35,7 @@ class State{
 			}
     	};
 };
-bool hasRequestsInDirectionInsideLift(State state, int lift, int dirn){
+bool hasRequestsInsideLiftInDirection(State state, int lift, int dirn){
 	int liftPosition=state.pos[lift];
 	if(dirn==1){
 		for(int i=liftPosition+1;i<state.N;i++){
@@ -54,7 +53,7 @@ bool hasRequestsInDirectionInsideLift(State state, int lift, int dirn){
 
 	return false;
 }
-bool checkReqInHall(State state,int lift,int dirn){
+bool checkReqInHallInDirection(State state,int lift,int dirn){
 	int liftPosition=state.pos[lift];
 	if(dirn==1){
 		for(int l=liftPosition+1; l<state.N;l++){
@@ -94,7 +93,7 @@ string takeAction(State &state){
 		bool openInDirnUp=false;
 		bool openInDirnDown=false;
 		if(state.dirn[i]==1){
-			bool stopsUp =hasRequestsInDirectionInsideLift(state,i,1);//hasReqUpDirn
+			bool stopsUp =hasRequestsInsideLiftInDirection(state,i,1);//hasReqUpDirn
 			//bool stopsDown =hasRequestsInDirectionInsideLift(state,i,-1);
 			int liftPos=state.pos[i];
 			if(state.BF[i][liftPos]==1){//button pressed inside lift for this floor than I have to stop at this floor
@@ -109,8 +108,8 @@ string takeAction(State &state){
 					shouldMoveOpposite=true;
 				}
 			}
-			bool reqInHallInUp = checkReqInHall(state,i,1);
-			bool reqInHallInDown= checkReqInHall(state,i,-1);
+			bool reqInHallInUp = checkReqInHallInDirection(state,i,1);
+			bool reqInHallInDown= checkReqInHallInDirection(state,i,-1);
 			if(state.BD[liftPos]==1){
 				//open in opposite direction on this floor
 				openInDirnDown=true;
@@ -168,12 +167,11 @@ string takeAction(State &state){
 				}else{
 					action+=makeAction("AS",i);
 				}
-
 				state.stopped[i]=1;
 			}
 		}else{//if(state.dirn[i]==-1)
 			//bool stopsUp =hasRequestsInDirectionInsideLift(state,i,1);//hasReqUpDirn
-			bool stopsDown =hasRequestsInDirectionInsideLift(state,i,-1);
+			bool stopsDown =hasRequestsInsideLiftInDirection(state,i,-1);
 			int liftPos=state.pos[i];
 			if(state.BF[i][liftPos]==1){//button pressed inside lift for this floor than I have to stop at this floor
 				shouldStop=true;
@@ -187,8 +185,8 @@ string takeAction(State &state){
 					shouldMoveOpposite=true;
 				}
 			}
-			bool reqInHallInUp = checkReqInHall(state,i,1);
-			bool reqInHallInDown= checkReqInHall(state,i,-1);
+			bool reqInHallInUp = checkReqInHallInDirection(state,i,1);
+			bool reqInHallInDown= checkReqInHallInDirection(state,i,-1);
 			if(state.BD[liftPos]==1){
 				//open in same direction on this floor
 				openInDirnDown=true;
@@ -240,8 +238,10 @@ string takeAction(State &state){
 			}else{
 				if(liftPos!=0){
 					action+=makeAction("AOD",i);
+					state.dirn[i]=-1;
 				}else if(liftPos!=state.N-1){
 					action+=makeAction("AOU",i);
+					state.dirn[i]=1;
 				}else{
 					action+=makeAction("AS",i);
 				}
@@ -256,24 +256,23 @@ void simpleAgent(Argument args){
 	State state(args.N,args.K);
 	string ready;
   	getline(cin,ready);
-  	cerr<<ready<<"ready"<<endl;
-	vector<string> repeat;
-	for(int i=0;i<args.N-1; i++){repeat.push_back("AU");repeat.push_back("AOU");}
-	repeat.push_back("AOD");
-	for(int i=0;i<args.N-1; i++){repeat.push_back("AD");repeat.push_back("AOD");}
-	repeat.push_back("AOU");
-	int i = 0;
+  	//cerr<<ready<<"ready"<<endl;
+	// vector<string> repeat;
+	// for(int i=0;i<args.N-1; i++){repeat.push_back("AU");repeat.push_back("AOU");}
+	// repeat.push_back("AOD");
+	// for(int i=0;i<args.N-1; i++){repeat.push_back("AD");repeat.push_back("AOD");}
+	// repeat.push_back("AOU");
+	//int i = 0;
 	while(1){
 		string actionsOut=takeAction(state);
-		cerr<<actionsOut<<" this action taken"<<endl;
+		cerr<<actionsOut<<" take this action"<<endl;
 		cout<<actionsOut<<'\n'<<flush;
 		string updates;
 	  	getline(cin,updates);
-		cerr<<updates<<"update"<<endl;
+		cerr<<updates<<"update state now"<<endl;
 		istringstream iss(updates);
 		vector<string> result;
 		for(string s; iss >> s;)result.push_back(s);
-		cerr<<result[0]<<"res"<<endl;
 		int length = result.size();
 		for(int i=0;i<length;i++){
 			if(result[i]!="0"){
@@ -304,6 +303,7 @@ int main(int argc, char *argv[]){
 	sscanf(argv[4],"%f",&args.q);
 	sscanf(argv[5],"%f",&args.r);
 	sscanf(argv[6],"%f",&args.t);
+	//simulate mdp then print 0
 	cout<<"0\n"<<flush;
 	simpleAgent(args);
 	return 0;
