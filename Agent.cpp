@@ -23,16 +23,21 @@ class State{
     	vector<int> BD;					// button down on each floor (always 0 for first floor)
     	vector<vector<int> >BF;			//[K][N]  = [[0]*N for i in range(K)] -- floor buttons pressed inside elevator, for each elevator
     	vector<int> dirn;				//1 or 0 or -1 for up or rest or down---dirn for all elevators
-    	State(int N, int K):pos(K),BU(N), BD(N),BF(K),dirn(K){
+		vector<bool> stopped;
+    	State(int N, int K):pos(K),BU(N), BD(N),BF(K),dirn(K),stopped(K){
 			this->N=N;
     	    this->K=K;
-    	    for(int l=0;l<K;l++)
+    	    for(int l=0;l<K;l++){
                 for(int i=0;i<N;i++){
                     BF[l].push_back(0);
                 }
+				dirn[l]=1;
+				stopped[l]=1;
+			}
+
     	};
 };
-bool findStopsInDirection(State state, int lift, int dirn){
+bool hasRequestsInDirectionInsideLift(State state, int lift, int dirn){
 	int liftPosition=state.pos[lift];
 	if(dirn==1){
 		for(int i=liftPosition+1;i<state.N;i++){
@@ -41,7 +46,7 @@ bool findStopsInDirection(State state, int lift, int dirn){
 			}
 		}
 	}else if(dirn==-1){
-		for(int i=liftPosition;i>=0;i--){/////////////liftPos-1 ?????///
+		for(int i=liftPosition-1;i>=0;i--){/////////////liftPos-1 ?????///
 			if(state.BF[lift][i]==1){//////////////who updates BF when a transition happens----when we read input we are doing it
 				return true;
 			}
@@ -50,83 +55,244 @@ bool findStopsInDirection(State state, int lift, int dirn){
 
 	return false;
 }
+bool checkReqInHall(State state,int lift,int dirn){
+	int liftPosition=state.pos[lift];
+	if(dirn==1){
+		for(int l=liftPosition+1; l<state.N;l++){
+			if(state.BU[l]==1){
+				return true;
+			}else if(state.BD[l]==1){
+				return true;
+			}
+
+		}
+	}else{
+		for(int l=liftPosition-1; l>=0;l--){
+			if(state.BU[l]==1){
+				return true;
+			}else if(state.BD[l]==1){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+string makeAction(string action, int pos){
+	string res = action;
+	string lift="";
+	int ii=pos+1;
+	stringstream ss;
+	ss<< ii;ss>>lift;
+	res+=lift;
+	return res;
+}
 string takeAction(State &state){
 	string action="";
-	for(int i=0;i<state.K;i++){
+	for(int i=0;i<state.K;i++){//FOR EACH LIFT
+		bool shouldStop=false;
+		bool shouldContinue=false;
+		bool shouldMoveOpposite =false;
+		bool openInDirnUp=false;
+		bool openInDirnDown=false;
 		if(state.dirn[i]==1){
-			bool stopsUp =findStopsInDirection(state,i,1);
-			if(stopsUp){
+			bool stopsUp =hasRequestsInDirectionInsideLift(state,i,1);//hasReqUpDirn
+			bool stopsDown =hasRequestsInDirectionInsideLift(state,i,-1);
+			int liftPos=state.pos[i];
+			if(state.BF[i][liftPos]==1){//button pressed inside lift for this floor than I have to stop at this floor
+				shouldStop=true;
+			}else if(stopsUp){
+				if(state.pos[i]!=state.N-1){//this condition will never rise
+					shouldContinue=true;
+				}
+			}
+			if(!stopsUp){
+				if(state.pos[i]!=0){
+					shouldMoveOpposite=true;
+				}
+			}
+			bool reqInHallInUp = checkReqInHall(state,i,1);
+			bool reqInHallInDown= checkReqInHall(state,i,-1);
+			if(state.BD[liftPos]==1){
+				//open in opposite direction on this floor
+				openInDirnDown=true;
+			}
+			if(state.BU[liftPos]==1){
+				openInDirnUp=true;
+				//open in same direction
+			}
+			//isSomeLiftAlreadyStopped
+			for(int l=0;l<state.K;l++){
+				if(i!=l && state.pos[l]==state.pos[i] && state.stopped[l]==1 && state.dirn[l]==1){
+					shouldStop=false;
+					break;
+				}
+			}
+			if(shouldStop){
 				if(action!=""){
 					action+=" ";
 				}
-				action+="AU";
-				string lift="";
-				int ii=i+1;
-				stringstream ss;
-				ss<< ii;ss>>lift;
-				action+=lift;
-				//update state of lift after taking action
-				state.pos[i]+=1;
+				action+=makeAction("AOU",i);
 				state.dirn[i]=1;
-			}else{
+				state.stopped[i]=1;
+			}else if(shouldContinue){
 				if(action!=""){
 					action+=" ";
 				}
-				action+="AS";
-				int ii=i+1;
-				string lift;
-				stringstream ss;
-				ss<< ii;ss>>lift;
-				action+=lift;
-				state.dirn[i]=0;
-			}
-		}else if(state.dirn[i]==-1){
-			bool stopsDown = findStopsInDirection(state,i,-1);
-			if(stopsDown){
-				if(action!=""){
-					action+=" ";
-				}
-				action+="AD";
-				string lift="";
-				int ii=i+1;
-				stringstream ss;
-				ss<< ii;ss>>lift;
-				action+=lift;
+				action+=makeAction("AU",i);
 				//update state of lift after taking action
-				state.pos[i]-=1;
+				state.dirn[i]=1;
+				state.pos[i]+=1;
+				state.stopped[i]=0;
+			}else if(openInDirnDown){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AOD",i);
 				state.dirn[i]=-1;
+				state.stopped[i]=1;
+			}else if(openInDirnUp){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AOU",i);
+				//update state of lift after taking action
+				state.dirn[i]=1;
+				state.stopped[i]=1;
+			}else if(reqInHallInUp){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AU",i);//
+				state.dirn[i]=1;
+				state.pos[i]+=1;
+				state.stopped[i]=0;
+			}else if((shouldMoveOpposite && !reqInHallInUp) || reqInHallInDown){//req in up dirn by hall buttons
+				//move down to pick passengers right?
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AD",i);
+				state.dirn[i]=-1;
+				state.pos[i]-=1;
+				state.stopped[i]=0;
 			}else{
 				if(action!=""){
 					action+=" ";
 				}
-				action+="AS";
-				int ii=i+1;
-				string lift;
-				stringstream ss;
-				ss<< ii;ss>>lift;
-				action+=lift;
-				state.dirn[i]=0;
+				if(liftPos!=0){
+					action+=makeAction("AOD",i);
+				}else if(liftPos!=state.N-1){
+					action+=makeAction("AOU",i);
+				}else{
+					action+=makeAction("AS",i);
+				}
+
+				state.stopped[i]=1;
 			}
-		}else{
-			//we have to take decision when there are no buttons pressed in direction of lift inside the lift
-			if(action!=""){
-				action+=" ";
+		}else{//if(state.dirn[i]==-1)
+			bool stopsUp =hasRequestsInDirectionInsideLift(state,i,1);//hasReqUpDirn
+			bool stopsDown =hasRequestsInDirectionInsideLift(state,i,-1);
+			int liftPos=state.pos[i];
+			if(state.BF[i][liftPos]==1){//button pressed inside lift for this floor than I have to stop at this floor
+				shouldStop=true;
+			}else if(stopsDown){
+				if(state.pos[i]!=0){//this condition will never rise
+					shouldContinue=true;
+				}
 			}
-			action+="AS";
-			int ii=i+1;
-			string lift;
-			stringstream ss;
-			ss<< ii;ss>>lift;
-			action+=lift;
-			state.dirn[i]=0;
+			if(!stopsDown){
+				if(state.pos[i]!=state.N-1){
+					shouldMoveOpposite=true;
+				}
+			}
+			bool reqInHallInUp = checkReqInHall(state,i,1);
+			bool reqInHallInDown= checkReqInHall(state,i,-1);
+			if(state.BD[liftPos]==1){
+				//open in same direction on this floor
+				openInDirnDown=true;
+			}
+			if(state.BU[liftPos]==1){
+				openInDirnUp=true;
+				//open in opposite direction
+			}
+			//isSomeLiftAlreadyStopped
+			for(int l=0;l<state.K;l++){
+				if(i!=l && state.pos[l]==state.pos[i] && state.stopped[l]==1 && state.dirn[l]==1){
+					shouldStop=false;
+					break;
+				}
+			}
+			if(shouldStop){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AOD",i);
+				state.dirn[i]=-1;
+				state.stopped[i]=1;
+			}else if(shouldContinue){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AD",i);
+				//update state of lift after taking action
+				state.dirn[i]=-1;
+				state.pos[i]-=1;
+				state.stopped[i]=0;
+			}else if(openInDirnDown){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AOD",i);
+				state.dirn[i]=-1;
+				state.stopped[i]=1;
+			}else if(openInDirnUp){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AOU",i);
+				//update state of lift after taking action
+				state.dirn[i]=1;
+				state.stopped[i]=1;
+			}else if(reqInHallInUp){
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AU",i);//
+				state.dirn[i]=1;
+				state.pos[i]+=1;
+				state.stopped[i]=0;
+			}else if((shouldMoveOpposite && !reqInHallInUp) || reqInHallInDown){//req in up dirn by hall buttons
+				//move down to pick passengers right?
+				if(action!=""){
+					action+=" ";
+				}
+				action+=makeAction("AD",i);
+				state.dirn[i]=-1;
+				state.pos[i]-=1;
+				state.stopped[i]=0;
+			}else{
+				if(action!=""){
+					action+=" ";
+				}
+				if(liftPos!=0){
+					action+=makeAction("AOD",i);
+				}else if(liftPos!=state.N-1){
+					action+=makeAction("AOU",i);
+				}else{
+					action+=makeAction("AS",i);
+				}
+
+				state.stopped[i]=1;
+			}
 		}
+
 	}
 	return action;
 }
 void simpleAgent(Argument args){
-	cerr<<"args"<<args.N<<args.K<<args.p<<args.q<<args.r<<args.t<<endl;
+	//cerr<<"args"<<args.N<<args.K<<args.p<<args.q<<args.r<<args.t<<endl;
 	State state(args.N,args.K);
-	cerr<<"state args "<<state.N<<" "<<state.K<<endl;
+	//cerr<<"state args "<<state.N<<" "<<state.K<<endl;
 	string ready;
   	getline(cin,ready);
   	cerr<<ready<<"ready"<<endl;
@@ -177,7 +343,6 @@ void simpleAgent(Argument args){
 		int length = result.size();
 		if (length ==1){
 			if(result[0]=="0"){
-
 			}else{
 				if(result[0][0]=='B'){
 					if(result[0][1]=='D'){
@@ -190,7 +355,7 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[0][2]- (int)'1';
 							int lift = (int)result[0][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
@@ -208,7 +373,7 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[1][2]- (int)'1';
 							int lift = (int)result[1][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
@@ -224,7 +389,23 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[0][2]- (int)'1';
 							int lift = (int)result[0][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
+						}
+					}
+				}
+				if(result[1][0]=='B'){
+					if(result[1][1]=='D'){
+						int floor = (int)result[1][3]- (int)'1';
+						state.BD[floor]=1;
+					}else if(result[1][1]=='U'){
+							int floor = (int)result[1][3]- (int)'1';
+							state.BU[floor]=1;
+					}else if(result[1][1]=='_'){
+						if(args.K<10 && args.N<10){
+							int button= (int)result[1][2]- (int)'1';
+							int lift = (int)result[1][4]- (int)'1';
+							cerr<<button<<" button "<<lift<<" lift press"<<endl;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
@@ -242,7 +423,7 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[1][2]- (int)'1';
 							int lift = (int)result[1][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
@@ -257,7 +438,7 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[2][2]- (int)'1';
 							int lift = (int)result[2][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
@@ -273,7 +454,7 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[0][2]- (int)'1';
 							int lift = (int)result[0][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
@@ -288,7 +469,7 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[1][2]- (int)'1';
 							int lift = (int)result[1][4]- (int)'1';
-							state.BF[button][lift]=1;
+							state.BF[lift][button]=1;
 						}
 					}
 				}
