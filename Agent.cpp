@@ -305,40 +305,40 @@ string takeAction(State &state){
 					state.stopped[i]=1;
 					state.BD[liftPos]=0;
 				}
-			}else if(reqInHallInDown-sentLiftDownAlready>0){
-				//if(reqInHallInDown-sentLiftDownAlready>0){
+			}else if(reqInHallInDown>0){
+				if(reqInHallInDown-sentLiftDownAlready>0){
 					action+=makeAction("AD",i);
 					state.dirn[i]=-1;
 					state.pos[i]-=1;
 					state.stopped[i]=0;
 					sentLiftDownAlready++;
-				// }else{
-				//
-				// 	action+=makeAction("AOD",i);
-				// 	state.dirn[i]=-1;
-				// 	state.BD[liftPos]=0;
-				// 	//state.pos[i]-=1;
-				// 	state.BF[i][liftPos]=0;
-				// 	state.stopped[i]=1;
-				// 	sentLiftDownAlready++;
-				// }
+				}else{
 
-			}else if(reqInHallInUp-sentLiftUpAlready>0){
-				//if(reqInHallInUp-sentLiftUpAlready>0){
+					action+=makeAction("AOD",i);
+					state.dirn[i]=-1;
+					state.BD[liftPos]=0;
+					//state.pos[i]-=1;
+					state.BF[i][liftPos]=0;
+					state.stopped[i]=1;
+					sentLiftDownAlready++;
+				}
+
+			}else if(reqInHallInUp>0){
+				if(reqInHallInUp-sentLiftUpAlready>0){
 					action+=makeAction("AU",i);//
 					state.dirn[i]=1;
 					state.pos[i]+=1;
 					state.stopped[i]=0;
 					sentLiftUpAlready++;
-				// }else{
-				// 	action+=makeAction("AOU",i);//
-				// 	state.dirn[i]=1;
-				// 	//state.pos[i]+=1;
-				// 	state.BF[i][liftPos]=0;
-				// 	state.BU[liftPos]=0;
-				// 	state.stopped[i]=1;
-				// 	sentLiftUpAlready++;
-				// }
+				}else{
+					action+=makeAction("AOU",i);//
+					state.dirn[i]=1;
+					//state.pos[i]+=1;
+					state.BF[i][liftPos]=0;
+					state.BU[liftPos]=0;
+					state.stopped[i]=1;
+					sentLiftUpAlready++;
+				}
 
 			}else if(shouldMoveOpposite){//req in up dirn by hall buttons
 				//move down to pick passengers right?
@@ -450,40 +450,40 @@ string takeAction(State &state){
 					state.BD[liftPos]=0;
 					state.BF[i][liftPos]=0;
 				}
-			}else if(reqInHallInDown-sentLiftDownAlready>0){
-				//if(reqInHallInDown){
+			}else if(reqInHallInDown>0){
+				if(reqInHallInDown-sentLiftDownAlready>0){
 
 					action+=makeAction("AD",i);
 					state.dirn[i]=-1;
 					state.pos[i]-=1;
 					state.stopped[i]=0;
 					sentLiftDownAlready++;
-				// }else{
-				// 	action+=makeAction("AOD",i);
-				// 	state.dirn[i]=-1;
-				// 	//state.pos[i]-=1;
-				// 	state.stopped[i]=1;
-				// 	state.BD[liftPos]=0;
-				// 	state.BF[i][liftPos]=0;
-				// 	sentLiftDownAlready++;
-				// }
+				}else{
+					action+=makeAction("AOD",i);
+					state.dirn[i]=-1;
+					//state.pos[i]-=1;
+					state.stopped[i]=1;
+					state.BD[liftPos]=0;
+					state.BF[i][liftPos]=0;
+					sentLiftDownAlready++;
+				}
 
-			}else if(reqInHallInUp-sentLiftUpAlready>0){
-				//if(reqInHallInUp-sentLiftUpAlready>0){
+			}else if(reqInHallInUp>0){
+				if(reqInHallInUp-sentLiftUpAlready>0){
 					action+=makeAction("AU",i);//
 					state.dirn[i]=1;
 					state.pos[i]+=1;
 					state.stopped[i]=0;
 					sentLiftUpAlready++;
-				// }else{
-				// 	action+=makeAction("AOU",i);//
-				// 	state.dirn[i]=1;
-				// 	//state.pos[i]+=1;
-				// 	state.stopped[i]=1;
-				// 	state.BU[liftPos]=0;
-				// 	state.BF[i][liftPos]=0;
-				// 	sentLiftUpAlready++;
-				// }
+				}else{
+					action+=makeAction("AOU",i);//
+					state.dirn[i]=1;
+					//state.pos[i]+=1;
+					state.stopped[i]=1;
+					state.BU[liftPos]=0;
+					state.BF[i][liftPos]=0;
+					sentLiftUpAlready++;
+				}
 			}else if(shouldMoveOpposite){//req in up dirn by hall buttons
 				//move down to pick passengers right?
 				action+=makeAction("AU",i);
