@@ -253,6 +253,7 @@ string takeAction(State &state){
 			if(shouldStop){
 				action+=makeAction("AOU",i);
 				state.BU[liftPos]=0;
+				state.BF[i][liftPos]=0;
 				state.dirn[i]=1;
 				state.stopped[i]=1;
 			}else if(shouldContinue){
@@ -264,11 +265,13 @@ string takeAction(State &state){
 			}else if(openInDirnDown){
 				if(liftPos!=0){
 					action+=makeAction("AOD",i);
+					state.BF[i][liftPos]=0;
 					state.dirn[i]=-1;
 					state.stopped[i]=1;
 					state.BD[liftPos]=0;
 				}else{
 					action+=makeAction("AOU",i);
+					state.BF[i][liftPos]=0;
 					state.dirn[i]=+1;
 					state.stopped[i]=1;
 					state.BU[liftPos]=0;
@@ -278,11 +281,13 @@ string takeAction(State &state){
 				if(liftPos!=state.N-1){
 					action+=makeAction("AOU",i);
 					//update state of lift after taking action
+					state.BF[i][liftPos]=0;
 					state.dirn[i]=1;
 					state.stopped[i]=1;
 					state.BU[liftPos]=0;
 				}else{
 					action+=makeAction("AOD",i);
+					state.BF[i][liftPos]=0;
 					//update state of lift after taking action
 					state.dirn[i]=-1;
 					state.stopped[i]=1;
@@ -300,6 +305,7 @@ string takeAction(State &state){
 					state.dirn[i]=-1;
 					state.BD[liftPos]=0;
 					//state.pos[i]-=1;
+					state.BF[i][liftPos]=0;
 					state.stopped[i]=1;
 				}
 
@@ -314,6 +320,7 @@ string takeAction(State &state){
 					action+=makeAction("AOU",i);//
 					state.dirn[i]=1;
 					//state.pos[i]+=1;
+					state.BF[i][liftPos]=0;
 					state.BU[liftPos]=0;
 					state.stopped[i]=1;
 				}
@@ -328,9 +335,11 @@ string takeAction(State &state){
 				if(liftPos!=0){
 					action+=makeAction("AOD",i);
 					state.BD[liftPos]=0;
+					state.BF[i][liftPos]=0;
 					state.dirn[i]=-1;
 				}else if(liftPos!=state.N-1){
 					action+=makeAction("AOU",i);
+					state.BF[i][liftPos]=0;
 					state.BU[liftPos]=0;
 					state.dirn[i]=1;
 				}else{
@@ -377,6 +386,8 @@ string takeAction(State &state){
 			if(shouldStop){
 				action+=makeAction("AOD",i);
 				state.dirn[i]=-1;
+				state.BF[i][liftPos]=0;
+				state.BD[liftPos]=0;
 				state.stopped[i]=1;
 			}else if(shouldContinue){
 				action+=makeAction("AD",i);
@@ -390,11 +401,13 @@ string takeAction(State &state){
 					state.dirn[i]=-1;
 					state.stopped[i]=1;
 					state.BD[liftPos]=0;
+					state.BF[i][liftPos]=0;
 				}else{
 					action+=makeAction("AOU",i);
 					state.dirn[i]=+1;
 					state.stopped[i]=1;
 					state.BU[liftPos]=0;
+					state.BF[i][liftPos]=0;
 				}
 
 			}else if(openInDirnUp){
@@ -404,12 +417,14 @@ string takeAction(State &state){
 					state.dirn[i]=1;
 					state.stopped[i]=1;
 					state.BU[liftPos]=0;
+					state.BF[i][liftPos]=0;
 				}else{
 					action+=makeAction("AOD",i);
 					//update state of lift after taking action
 					state.dirn[i]=-1;
 					state.stopped[i]=1;
 					state.BD[liftPos]=0;
+					state.BF[i][liftPos]=0;
 				}
 			}else if(reqInHallInDown>0){
 				if(reqInHallInDown-sentLiftDownAlready>0){
@@ -424,6 +439,7 @@ string takeAction(State &state){
 					//state.pos[i]-=1;
 					state.stopped[i]=1;
 					state.BD[liftPos]=0;
+					state.BF[i][liftPos]=0;
 				}
 
 			}else if(reqInHallInUp>0){
@@ -439,6 +455,7 @@ string takeAction(State &state){
 					//state.pos[i]+=1;
 					state.stopped[i]=1;
 					state.BU[liftPos]=0;
+					state.BF[i][liftPos]=0;
 				}
 			}else if(shouldMoveOpposite && !reqInHallInUp ){//req in up dirn by hall buttons
 				//move down to pick passengers right?
@@ -451,9 +468,11 @@ string takeAction(State &state){
 					action+=makeAction("AOD",i);
 					state.BD[liftPos]=0;
 					state.dirn[i]=-1;
+					state.BF[i][liftPos]=0;
 				}else if(liftPos!=state.N-1){
 					action+=makeAction("AOU",i);
 					state.BU[liftPos]=0;
+					state.BF[i][liftPos]=0;
 					state.dirn[i]=1;
 				}else{
 					action+=makeAction("AS",i);
