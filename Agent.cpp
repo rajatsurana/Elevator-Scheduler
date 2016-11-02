@@ -168,27 +168,30 @@ bool hasRequestsInsideLiftInDirection(State state, int lift, int dirn){
 	}
 	return false;
 }
-bool checkReqInHallInDirection(State state,int lift,int dirn){
+int checkReqInHallInDirection(State state,int lift,int dirn){
+	int numReq=0;
 	int liftPosition=state.pos[lift];
 	if(dirn==1){
 		for(int l=liftPosition+1; l<state.N;l++){
 			if(state.BU[l]!=0){
-				return true;
+				//return true;
+				numReq++;
 			}else if(state.BD[l]!=0){
-				return true;
+				//return true;
+				numReq++;
 			}
 
 		}
 	}else{
 		for(int l=liftPosition-1; l>=0;l--){
 			if(state.BU[l]!=0){
-				return true;
+				numReq++;//return true;
 			}else if(state.BD[l]!=0){
-				return true;
+				numReq++;//return true;
 			}
 		}
 	}
-	return false;
+	return numReq;
 }
 string makeAction(string action, int pos){
 	string res = action;
@@ -201,8 +204,9 @@ string makeAction(string action, int pos){
 }
 string takeAction(State &state){
 	string action="";
-	bool sentOneLiftUpAlready=false;
-	bool sentOneLiftDownAlready=false;
+	int sentLiftUpAlready=0;
+	int sentLiftDownAlready=0;
+
 	for(int i=0;i<state.K;i++){//FOR EACH LIFT
 		bool shouldStop=false;
 		bool shouldContinue=false;
@@ -226,8 +230,8 @@ string takeAction(State &state){
 					shouldMoveOpposite=true;
 				}
 			}
-			bool reqInHallInUp = checkReqInHallInDirection(state,i,1);
-			bool reqInHallInDown= checkReqInHallInDirection(state,i,-1);
+			int reqInHallInUp = checkReqInHallInDirection(state,i,1);
+			int reqInHallInDown= checkReqInHallInDirection(state,i,-1);
 			if(state.BD[liftPos]!=0){
 				//open in opposite direction on this floor
 				openInDirnDown=true;
@@ -258,42 +262,59 @@ string takeAction(State &state){
 				state.pos[i]+=1;
 				state.stopped[i]=0;
 			}else if(openInDirnDown){
+				if(liftPos!=0){
+					action+=makeAction("AOD",i);
+					state.dirn[i]=-1;
+					state.stopped[i]=1;
+					state.BD[liftPos]=0;
+				}else{
+					action+=makeAction("AOU",i);
+					state.dirn[i]=+1;
+					state.stopped[i]=1;
+					state.BU[liftPos]=0;
+				}
 
-				action+=makeAction("AOD",i);
-				state.BD[liftPos]=0;
-				state.dirn[i]=-1;
-				state.stopped[i]=1;
 			}else if(openInDirnUp){
-				action+=makeAction("AOU",i);
-				//update state of lift after taking action
-				state.BU[liftPos]=0;
-				state.dirn[i]=1;
-				state.stopped[i]=1;
-			}else if(reqInHallInDown){
-				if(!sentOneLiftDownAlready){
+				if(liftPos!=state.N-1){
+					action+=makeAction("AOU",i);
+					//update state of lift after taking action
+					state.dirn[i]=1;
+					state.stopped[i]=1;
+					state.BU[liftPos]=0;
+				}else{
+					action+=makeAction("AOD",i);
+					//update state of lift after taking action
+					state.dirn[i]=-1;
+					state.stopped[i]=1;
+					state.BD[liftPos]=0;
+				}
+			}else if(reqInHallInDown>0){
+				if(reqInHallInDown-sentLiftDownAlready>0){
 					action+=makeAction("AD",i);
 					state.dirn[i]=-1;
 					state.pos[i]-=1;
 					state.stopped[i]=0;
-					sentOneLiftDownAlready=true;
+					sentLiftDownAlready++;
 				}else{
 					action+=makeAction("AOD",i);
 					state.dirn[i]=-1;
+					state.BD[liftPos]=0;
 					//state.pos[i]-=1;
 					state.stopped[i]=1;
 				}
 
-			}else if(reqInHallInUp){
-				if(!sentOneLiftUpAlready){
+			}else if(reqInHallInUp>0){
+				if(reqInHallInUp-sentLiftUpAlready>0){
 					action+=makeAction("AU",i);//
 					state.dirn[i]=1;
 					state.pos[i]+=1;
 					state.stopped[i]=0;
-					sentOneLiftUpAlready=true;
+					sentLiftUpAlready++;
 				}else{
 					action+=makeAction("AOU",i);//
 					state.dirn[i]=1;
 					//state.pos[i]+=1;
+					state.BU[liftPos]=0;
 					state.stopped[i]=1;
 				}
 
@@ -333,8 +354,8 @@ string takeAction(State &state){
 					shouldMoveOpposite=true;
 				}
 			}
-			bool reqInHallInUp = checkReqInHallInDirection(state,i,1);
-			bool reqInHallInDown= checkReqInHallInDirection(state,i,-1);
+			int reqInHallInUp = checkReqInHallInDirection(state,i,1);
+			int reqInHallInDown= checkReqInHallInDirection(state,i,-1);
 			if(state.BD[liftPos]!=0){
 				//open in same direction on this floor
 				openInDirnDown=true;
@@ -364,40 +385,60 @@ string takeAction(State &state){
 				state.pos[i]-=1;
 				state.stopped[i]=0;
 			}else if(openInDirnDown){
-				action+=makeAction("AOD",i);
-				state.dirn[i]=-1;
-				state.stopped[i]=1;
+				if(liftPos!=0){
+					action+=makeAction("AOD",i);
+					state.dirn[i]=-1;
+					state.stopped[i]=1;
+					state.BD[liftPos]=0;
+				}else{
+					action+=makeAction("AOU",i);
+					state.dirn[i]=+1;
+					state.stopped[i]=1;
+					state.BU[liftPos]=0;
+				}
+
 			}else if(openInDirnUp){
-				action+=makeAction("AOU",i);
-				//update state of lift after taking action
-				state.dirn[i]=1;
-				state.stopped[i]=1;
-			}else if(reqInHallInDown){
-				if(!sentOneLiftDownAlready){
+				if(liftPos!=state.N-1){
+					action+=makeAction("AOU",i);
+					//update state of lift after taking action
+					state.dirn[i]=1;
+					state.stopped[i]=1;
+					state.BU[liftPos]=0;
+				}else{
+					action+=makeAction("AOD",i);
+					//update state of lift after taking action
+					state.dirn[i]=-1;
+					state.stopped[i]=1;
+					state.BD[liftPos]=0;
+				}
+			}else if(reqInHallInDown>0){
+				if(reqInHallInDown-sentLiftDownAlready>0){
 					action+=makeAction("AD",i);
 					state.dirn[i]=-1;
 					state.pos[i]-=1;
 					state.stopped[i]=0;
-					sentOneLiftDownAlready=true;
+					sentLiftDownAlready++;
 				}else{
 					action+=makeAction("AOD",i);
 					state.dirn[i]=-1;
 					//state.pos[i]-=1;
 					state.stopped[i]=1;
+					state.BD[liftPos]=0;
 				}
 
-			}else if(reqInHallInUp){
-				if(!sentOneLiftUpAlready){
+			}else if(reqInHallInUp>0){
+				if(reqInHallInUp-sentLiftUpAlready>0){
 					action+=makeAction("AU",i);//
 					state.dirn[i]=1;
 					state.pos[i]+=1;
 					state.stopped[i]=0;
-					sentOneLiftUpAlready=true;
+					sentLiftUpAlready++;
 				}else{
 					action+=makeAction("AOU",i);//
 					state.dirn[i]=1;
 					//state.pos[i]+=1;
 					state.stopped[i]=1;
+					state.BU[liftPos]=0;
 				}
 			}else if(shouldMoveOpposite && !reqInHallInUp ){//req in up dirn by hall buttons
 				//move down to pick passengers right?
