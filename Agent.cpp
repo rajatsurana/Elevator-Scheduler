@@ -176,7 +176,8 @@ int checkReqInHallInDirection(State state,int lift,int dirn){
 			if(state.BU[l]!=0){
 				//return true;
 				numReq++;
-			}else if(state.BD[l]!=0){
+			}
+			if(state.BD[l]!=0){
 				//return true;
 				numReq++;
 			}
@@ -186,17 +187,18 @@ int checkReqInHallInDirection(State state,int lift,int dirn){
 		for(int l=liftPosition-1; l>=0;l--){
 			if(state.BU[l]!=0){
 				numReq++;//return true;
-			}else if(state.BD[l]!=0){
+			}
+			if(state.BD[l]!=0){
 				numReq++;//return true;
 			}
 		}
 	}
 	return numReq;
 }
-string makeAction(string action, int pos){
+string makeAction(string action, int liftNum){
 	string res = action;
 	string lift="";
-	int ii=pos+1;
+	int ii=liftNum+1;
 	stringstream ss;
 	ss<< ii;ss>>lift;
 	res+=lift;
@@ -206,7 +208,9 @@ string takeAction(State &state){
 	string action="";
 	int sentLiftUpAlready=0;
 	int sentLiftDownAlready=0;
-
+//how many lift empty
+//if 2-- then send the nearest one to the hall requests
+//otw compute the waiting time for all the lifts taking into consideration the stops encountered for busy lifts
 	for(int i=0;i<state.K;i++){//FOR EACH LIFT
 		bool shouldStop=false;
 		bool shouldContinue=false;
@@ -221,7 +225,7 @@ string takeAction(State &state){
 			if(state.BF[i][liftPos]==1){//button pressed inside lift for this floor than I have to stop at this floor
 				shouldStop=true;
 			}else if(stopsUp){
-				if(state.pos[i]!=state.N-1){//this condition will never rise
+				if(liftPos!=state.N-1){//this condition will never rise
 					shouldContinue=true;
 				}
 			}
@@ -251,11 +255,19 @@ string takeAction(State &state){
 				action+=" ";
 			}
 			if(shouldStop){
-				action+=makeAction("AOU",i);
-				state.BU[liftPos]=0;
-				state.BF[i][liftPos]=0;
-				state.dirn[i]=1;
-				state.stopped[i]=1;
+				if(liftPos!=state.N-1){
+					action+=makeAction("AOU",i);
+					state.BU[liftPos]=0;
+					state.BF[i][liftPos]=0;
+					state.dirn[i]=1;
+					state.stopped[i]=1;
+				}else{
+					action+=makeAction("AOD",i);
+					state.BD[liftPos]=0;
+					state.BF[i][liftPos]=0;
+					state.dirn[i]=-1;
+					state.stopped[i]=1;
+				}
 			}else if(shouldContinue){
 				action+=makeAction("AU",i);
 				//update state of lift after taking action
@@ -293,39 +305,42 @@ string takeAction(State &state){
 					state.stopped[i]=1;
 					state.BD[liftPos]=0;
 				}
-			}else if(reqInHallInDown>0){
-				if(reqInHallInDown-sentLiftDownAlready>0){
+			}else if(reqInHallInDown-sentLiftDownAlready>0){
+				//if(reqInHallInDown-sentLiftDownAlready>0){
 					action+=makeAction("AD",i);
 					state.dirn[i]=-1;
 					state.pos[i]-=1;
 					state.stopped[i]=0;
 					sentLiftDownAlready++;
-				}else{
-					action+=makeAction("AOD",i);
-					state.dirn[i]=-1;
-					state.BD[liftPos]=0;
-					//state.pos[i]-=1;
-					state.BF[i][liftPos]=0;
-					state.stopped[i]=1;
-				}
+				// }else{
+				//
+				// 	action+=makeAction("AOD",i);
+				// 	state.dirn[i]=-1;
+				// 	state.BD[liftPos]=0;
+				// 	//state.pos[i]-=1;
+				// 	state.BF[i][liftPos]=0;
+				// 	state.stopped[i]=1;
+				// 	sentLiftDownAlready++;
+				// }
 
-			}else if(reqInHallInUp>0){
-				if(reqInHallInUp-sentLiftUpAlready>0){
+			}else if(reqInHallInUp-sentLiftUpAlready>0){
+				//if(reqInHallInUp-sentLiftUpAlready>0){
 					action+=makeAction("AU",i);//
 					state.dirn[i]=1;
 					state.pos[i]+=1;
 					state.stopped[i]=0;
 					sentLiftUpAlready++;
-				}else{
-					action+=makeAction("AOU",i);//
-					state.dirn[i]=1;
-					//state.pos[i]+=1;
-					state.BF[i][liftPos]=0;
-					state.BU[liftPos]=0;
-					state.stopped[i]=1;
-				}
+				// }else{
+				// 	action+=makeAction("AOU",i);//
+				// 	state.dirn[i]=1;
+				// 	//state.pos[i]+=1;
+				// 	state.BF[i][liftPos]=0;
+				// 	state.BU[liftPos]=0;
+				// 	state.stopped[i]=1;
+				// 	sentLiftUpAlready++;
+				// }
 
-			}else if(shouldMoveOpposite && !reqInHallInUp){//req in up dirn by hall buttons
+			}else if(shouldMoveOpposite){//req in up dirn by hall buttons
 				//move down to pick passengers right?
 				action+=makeAction("AD",i);
 				state.dirn[i]=-1;
@@ -375,7 +390,7 @@ string takeAction(State &state){
 			}
 			//isSomeLiftAlreadyStopped
 			for(int l=0;l<state.K;l++){
-				if(i!=l && state.pos[l]==state.pos[i] && state.stopped[l]==1 && state.dirn[l]==1){
+				if(i!=l && state.pos[l]==state.pos[i] && state.stopped[l]==1 && state.dirn[l]==-1){
 					shouldStop=false;
 					break;
 				}
@@ -384,11 +399,20 @@ string takeAction(State &state){
 				action+=" ";
 			}
 			if(shouldStop){
-				action+=makeAction("AOD",i);
-				state.dirn[i]=-1;
-				state.BF[i][liftPos]=0;
-				state.BD[liftPos]=0;
-				state.stopped[i]=1;
+				if(liftPos!=0){
+					action+=makeAction("AOD",i);
+					state.dirn[i]=-1;
+					state.BF[i][liftPos]=0;
+					state.BD[liftPos]=0;
+					state.stopped[i]=1;
+				}else{
+					action+=makeAction("AOU",i);
+					state.dirn[i]=1;
+					state.BF[i][liftPos]=0;
+					state.BU[liftPos]=0;
+					state.stopped[i]=1;
+				}
+
 			}else if(shouldContinue){
 				action+=makeAction("AD",i);
 				//update state of lift after taking action
@@ -396,7 +420,7 @@ string takeAction(State &state){
 				state.pos[i]-=1;
 				state.stopped[i]=0;
 			}else if(openInDirnDown){
-				if(liftPos!=0){
+				if(liftPos>0){
 					action+=makeAction("AOD",i);
 					state.dirn[i]=-1;
 					state.stopped[i]=1;
@@ -404,14 +428,14 @@ string takeAction(State &state){
 					state.BF[i][liftPos]=0;
 				}else{
 					action+=makeAction("AOU",i);
-					state.dirn[i]=+1;
+					state.dirn[i]=1;
 					state.stopped[i]=1;
 					state.BU[liftPos]=0;
 					state.BF[i][liftPos]=0;
 				}
 
 			}else if(openInDirnUp){
-				if(liftPos!=state.N-1){
+				if(liftPos<state.N-1){
 					action+=makeAction("AOU",i);
 					//update state of lift after taking action
 					state.dirn[i]=1;
@@ -426,42 +450,45 @@ string takeAction(State &state){
 					state.BD[liftPos]=0;
 					state.BF[i][liftPos]=0;
 				}
-			}else if(reqInHallInDown>0){
-				if(reqInHallInDown-sentLiftDownAlready>0){
+			}else if(reqInHallInDown-sentLiftDownAlready>0){
+				//if(reqInHallInDown){
+
 					action+=makeAction("AD",i);
 					state.dirn[i]=-1;
 					state.pos[i]-=1;
 					state.stopped[i]=0;
 					sentLiftDownAlready++;
-				}else{
-					action+=makeAction("AOD",i);
-					state.dirn[i]=-1;
-					//state.pos[i]-=1;
-					state.stopped[i]=1;
-					state.BD[liftPos]=0;
-					state.BF[i][liftPos]=0;
-				}
+				// }else{
+				// 	action+=makeAction("AOD",i);
+				// 	state.dirn[i]=-1;
+				// 	//state.pos[i]-=1;
+				// 	state.stopped[i]=1;
+				// 	state.BD[liftPos]=0;
+				// 	state.BF[i][liftPos]=0;
+				// 	sentLiftDownAlready++;
+				// }
 
-			}else if(reqInHallInUp>0){
-				if(reqInHallInUp-sentLiftUpAlready>0){
+			}else if(reqInHallInUp-sentLiftUpAlready>0){
+				//if(reqInHallInUp-sentLiftUpAlready>0){
 					action+=makeAction("AU",i);//
 					state.dirn[i]=1;
 					state.pos[i]+=1;
 					state.stopped[i]=0;
 					sentLiftUpAlready++;
-				}else{
-					action+=makeAction("AOU",i);//
-					state.dirn[i]=1;
-					//state.pos[i]+=1;
-					state.stopped[i]=1;
-					state.BU[liftPos]=0;
-					state.BF[i][liftPos]=0;
-				}
-			}else if(shouldMoveOpposite && !reqInHallInUp ){//req in up dirn by hall buttons
+				// }else{
+				// 	action+=makeAction("AOU",i);//
+				// 	state.dirn[i]=1;
+				// 	//state.pos[i]+=1;
+				// 	state.stopped[i]=1;
+				// 	state.BU[liftPos]=0;
+				// 	state.BF[i][liftPos]=0;
+				// 	sentLiftUpAlready++;
+				// }
+			}else if(shouldMoveOpposite){//req in up dirn by hall buttons
 				//move down to pick passengers right?
-				action+=makeAction("AD",i);
-				state.dirn[i]=-1;
-				state.pos[i]-=1;
+				action+=makeAction("AU",i);
+				state.dirn[i]=1;
+				state.pos[i]+=1;
 				state.stopped[i]=0;
 			}else{
 				if(liftPos!=0){
@@ -512,11 +539,11 @@ void simpleAgent(Argument args){
 	while(1){
 		timer++;
 		string actionsOut=takeAction(state);
-		cerr<<actionsOut<<" take this action"<<endl;
+		//cerr<<actionsOut<<" take this action"<<endl;
 		cout<<actionsOut<<'\n'<<flush;
 		string updates;
 	  	getline(cin,updates);
-		cerr<<updates<<"update state now"<<endl;
+		//cerr<<updates<<"update state now"<<endl;
 		istringstream iss(updates);
 		vector<string> result;
 		for(string s; iss >> s;)result.push_back(s);
@@ -534,6 +561,24 @@ void simpleAgent(Argument args){
 						if(args.K<10 && args.N<10){
 							int button= (int)result[i][2]- (int)'1';
 							int lift = (int)result[i][4]- (int)'1';
+							state.BF[lift][button]=1;
+						}else{
+							int j=2;
+							int jj=2;
+							while(result[i][j]!='_'){
+								j++;
+							}
+							int jjj=j+1;
+							while(isdigit(result[i][jjj])){
+								jjj++;
+							}
+							string sub=result[i].substr(jj,j-jj);
+							string subj=result[i].substr(j+1,jjj-1-j);
+							const char* one=sub.c_str();
+							const char* two=subj.c_str();
+							int button =atoi(one)-1;
+							int lift =atoi(two)-1;
+							//cerr<<button<<" buttlift "<<lift<<endl;
 							state.BF[lift][button]=1;
 						}
 					}
